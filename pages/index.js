@@ -17,6 +17,7 @@ const DUMMY_MEETUPS = [
     address: "Some address 5, 12345 Some City",
     description: "This is a second meetup",
   },
+  
 ];
 
 function HomePage(props) {
@@ -29,11 +30,26 @@ function HomePage(props) {
   );
 }
 
+//pole vaja revalidate'ida, sest ta teeb seda niikuinii serveri poolel
+// aeglasem, kui pole vaja kogu aeg data't fetchida
+// export async function getServerSideProps() {
+
+//   // const req = context.req
+//   // const res = context.res
+
+//   return {
+//     props: {
+//       meetups: DUMMY_MEETUPS
+//     }
+//   }
+// }
+
 export async function getStaticProps() {
   return {
     props: {
       meetups: DUMMY_MEETUPS
-    }
+    },
+    revalidate: 10
   }
 }
 
