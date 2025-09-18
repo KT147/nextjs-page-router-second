@@ -1,46 +1,62 @@
 import MeetupDetail from "../../components/meetups/MeetupDetail";
+import { MongoClient, ObjectId } from "mongodb";
 
-function MeetUpDetails() {
-
+function MeetUpDetails(props) {
   return (
     <MeetupDetail
-      image="https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png"
-      title="First Meetup"
-      address="Some Street"
-      description="Some description"
+      image={props.meetupData.image}
+      title={props.meetupData.title}
+      address={props.meetupData.address}
+      descripton={props.meetupData.description}
     />
   );
 }
 
 export async function getStaticPaths() {
- return {
-  fallback: false ,
-  paths: [
-    { params: {
-        meetupId: 'm1'
-    }},
-    { params: {
-      meetupId: 'm2'
-  }}
-  ]
- }
+  const client = await MongoClient.connect(
+    "mongodb+srv://KT147:moviemaster@cluster0.dhxnsj8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  );
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close()
+
+  return {
+    fallback: false,
+    paths: meetups.map((meetup) => ({
+      params: { meetupId: meetup._id.toString() },
+    })),
+  };
 }
 
 export async function getStaticProps(context) {
+  const meetupId = context.params.meetupId;
 
-  const meetupId = context.params.meetupId
+  const client = await MongoClient.connect(
+    "mongodb+srv://KT147:moviemaster@cluster0.dhxnsj8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  );
+  const db = client.db();
 
-  console.log(meetupId)
+  const meetupsCollection = db.collection("meetups");
+
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  const selectedMeetup = await meetupsCollection.findOne({_id: new ObjectId(meetupId) })
+
+  client.close()
+
+  console.log(meetupId);
   return {
     props: {
       meetupData: {
-        image:
-          "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-        id: "m1",
-        title: "First Meetup",
-        address: "Some Street",
-        description: "Some description",
-      },
+        id: selectedMeetup._id.toString(),
+        title: selectedMeetup.title,
+        image: selectedMeetup.image,
+        description: selectedMeetup.description
+      }
     },
   };
 }
